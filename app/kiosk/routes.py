@@ -80,6 +80,10 @@ def verify():
 
         encoding = face_service.encode_face(photo_data)
 
+        if encoding is None:
+            flash("We couldn't read your face. Please try again.")
+            return redirect(url_for('kiosk.verify'))   # kiosk.time_in in time_in()
+
         # Duplicate check against EVERY registered applicant
         existing = Applicant.query.all()
         if face_service.find_duplicate(encoding, existing):
@@ -213,7 +217,7 @@ def time_in():
         encoding = face_service.encode_face(photo_data)
 
         # Step 4: search all registered faces for the best match
-        match = face_service.find_duplicate(encoding, Applicant.query.all())
+        match = face_service.find_match(encoding, Applicant.query.all())
 
         if not match:
             attempts = session.get('time_in_attempts', 0) + 1

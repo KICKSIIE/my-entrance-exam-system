@@ -2,49 +2,42 @@
 {% block title %}Manage Exam Schedule{% endblock %}
 {% block content %}
 
-    <h1 class="page-heading">Manage Exam Schedule</h1>
-    <p class="page-subtext">Batches can be edited or deleted only when they are not ongoing and have no applicants assigned.</p>
-
-    <div class="inline-form-card">
-        <form method="POST">
-            <div class="field">
-                <label for="exam_date">Exam Date</label>
-                <input type="date" id="exam_date" name="exam_date" required>
-            </div>
-            <div class="field">
-                <label for="start_time">Start Time</label>
-                <input type="time" id="start_time" name="start_time" required>
-            </div>
-            <div class="field">
-                <label for="end_time">End Time</label>
-                <input type="time" id="end_time" name="end_time" required>
-            </div>
-            <div class="field">
-                <label for="building">Building</label>
-                <input type="text" id="building" name="building" required>
-            </div>
-            <div class="field">
-                <label for="room">Room</label>
-                <input type="text" id="room" name="room" required>
-            </div>
-            <div class="field">
-                <label for="capacity">Capacity</label>
-                <input type="number" id="capacity" name="capacity" min="1" required>
-            </div>
-            <button type="submit" class="btn-primary">Create Batch</button>
-        </form>
+    <div class="page-header">
+        <div>
+            <h1 class="page-heading">Manage Exam Schedule</h1>
+            <p class="page-subtext">Batches can be edited or deleted only when they are not ongoing and have no applicants assigned.</p>
+        </div>
+        <button type="button" class="btn-primary" id="open-create">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Create Batch
+        </button>
     </div>
 
     {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="flash-error">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+        {% for message in messages %}
+            {% set ok = ('created' in message) or ('updated' in message) or ('deleted' in message) %}
+            <div class="{{ 'flash-success' if ok else 'flash-error' }}" role="status">{{ message }}</div>
+        {% endfor %}
     {% endwith %}
 
-    {% if batches %}
-        <table class="data-table">
+    <div class="toolbar">
+        <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="search" id="filter-search" placeholder="Search by Batch ID or Building..." aria-label="Search batches">
+        </div>
+        <select id="filter-status" aria-label="Filter by status">
+            <option value="">Status: All</option>
+            <option value="open">Open</option>
+            <option value="full">Full</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="ended">Ended</option>
+        </select>
+        <input type="date" id="filter-date" aria-label="Filter by exam date">
+    </div>
+
+    <div class="table-card">
+        {% if batches %}
+        <table class="data-table" id="batch-table">
             <thead>
                 <tr>
                     <th>Batch ID</th>
@@ -53,36 +46,137 @@
                     <th>Building / Room</th>
                     <th>Seats</th>
                     <th>Status</th>
-                    <th></th>
+                    <th class="col-actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for batch in batches %}
-                <tr>
-                    <td>{{ batch.id }}</td>
+                {% if batch.is_ongoing %}{% set status = 'ongoing' %}
+                {% elif batch.has_ended %}{% set status = 'ended' %}
+                {% elif batch.is_full %}{% set status = 'full' %}
+                {% else %}{% set status = 'open' %}{% endif %}
+                {% set locked = batch.is_ongoing or batch.reserved_seats > 0 %}
+                {% set pct = ((batch.reserved_seats / batch.capacity) * 100)|round|int if batch.capacity else 0 %}
+                <tr data-status="{{ status }}"
+                    data-date="{{ batch.exam_date.strftime('%Y-%m-%d') }}"
+                    data-search="{{ batch.id }} {{ batch.building|lower }} {{ batch.room|lower }}">
+                    <td class="batch-id">#{{ batch.id }}</td>
                     <td>{{ batch.exam_date.strftime('%b %d, %Y') }}</td>
-                    <td class="muted">{{ batch.start_time.strftime('%I:%M %p') }} - {{ batch.end_time.strftime('%I:%M %p') }}</td>
-                    <td>{{ batch.building }}, {{ batch.room }}</td>
-                    <td>{{ batch.reserved_seats }} / {{ batch.capacity }}</td>
-                    <td>
-                        {% if batch.is_ongoing %}Ongoing
-                        {% elif batch.has_ended %}Ended
-                        {% elif batch.is_full %}Full
-                        {% else %}Open{% endif %}
+                    <td class="muted">{{ batch.start_time.strftime('%I:%M %p') }} – {{ batch.end_time.strftime('%I:%M %p') }}</td>
+                    <td>{{ batch.building }}<span class="cell-sub">Room {{ batch.room }}</span></td>
+                    <td class="seats">
+                        {{ batch.reserved_seats }} / {{ batch.capacity }}
+                        <div class="seats-bar {{ 'is-full' if pct >= 100 }}"><span data-pct="{{ [pct, 100]|min }}"></span></div>
                     </td>
-                    <td>
-                        <a href="{{ url_for('admin.edit_batch', batch_id=batch.id) }}" class="link-button">Edit</a>
+                    <td><span class="status-badge status-{{ status }}">{{ status }}</span></td>
+                    <td class="col-actions">
+                        <a href="{{ url_for('admin.edit_batch', batch_id=batch.id) }}"
+                           class="link-button {{ 'is-locked' if locked }}"
+                           {% if locked %}title="This batch can't be changed right now"{% endif %}>Edit</a>
                         <form method="POST" action="{{ url_for('admin.delete_batch', batch_id=batch.id) }}" class="inline-form"
-                              onsubmit="return confirm('Delete this batch?');">
-                            <button type="submit" class="link-button link-button-danger">Delete</button>
+                              onsubmit="return confirm('Delete batch #{{ batch.id }}? This cannot be undone.');">
+                            <button type="submit" class="link-button link-button-danger {{ 'is-locked' if locked }}"
+                                    {% if locked %}title="This batch can't be changed right now"{% endif %}>Delete</button>
                         </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    {% else %}
-        <p class="page-subtext">No exam batches created yet.</p>
-    {% endif %}
+        <div class="empty-state" id="no-matches" hidden>
+            <strong>No matching batches</strong>
+            Try a different search or clear the filters.
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <strong>No exam batches yet</strong>
+            Select Create Batch to schedule the first one.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Create Batch modal -->
+    <dialog class="modal" id="create-modal" aria-labelledby="create-title">
+        <h2 id="create-title">Create New Batch</h2>
+        <form method="POST">
+            <div class="form-grid">
+                <div class="field">
+                    <label for="exam_date">Exam Date</label>
+                    <input type="date" id="exam_date" name="exam_date" required>
+                </div>
+                <div class="field">
+                    <label for="building">Building</label>
+                    <input type="text" id="building" name="building" placeholder="e.g. IT Building" required>
+                </div>
+                <div class="field">
+                    <label for="start_time">Start Time</label>
+                    <input type="time" id="start_time" name="start_time" required>
+                </div>
+                <div class="field">
+                    <label for="room">Room</label>
+                    <input type="text" id="room" name="room" placeholder="e.g. 101" required>
+                </div>
+                <div class="field">
+                    <label for="end_time">End Time</label>
+                    <input type="time" id="end_time" name="end_time" required>
+                </div>
+                <div class="field">
+                    <label for="capacity">Capacity</label>
+                    <input type="number" id="capacity" name="capacity" min="1" placeholder="e.g. 50" required>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" id="close-create">Cancel</button>
+                <button type="submit" class="btn-primary">Save Batch</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script>
+    (function () {
+        // ----- Create modal -----
+        var modal = document.getElementById('create-modal');
+        document.getElementById('open-create').addEventListener('click', function () { modal.showModal(); });
+        document.getElementById('close-create').addEventListener('click', function () { modal.close(); });
+        // Past dates can't be picked (the server enforces this too)
+        var d = new Date();
+        var today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        document.getElementById('exam_date').min = today;
+        // Click on the dark backdrop closes it
+        modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+
+        // ----- Seat bar widths -----
+        document.querySelectorAll('.seats-bar span[data-pct]').forEach(function (bar) {
+            bar.style.width = bar.dataset.pct + '%';
+        });
+
+        // ----- Search + filters (client-side) -----
+        var table = document.getElementById('batch-table');
+        if (!table) return;
+        var rows = table.querySelectorAll('tbody tr');
+        var search = document.getElementById('filter-search');
+        var status = document.getElementById('filter-status');
+        var date = document.getElementById('filter-date');
+        var empty = document.getElementById('no-matches');
+
+        function apply() {
+            var q = search.value.trim().toLowerCase();
+            var visible = 0;
+            rows.forEach(function (row) {
+                var show =
+                    (!q || row.dataset.search.indexOf(q) !== -1) &&
+                    (!status.value || row.dataset.status === status.value) &&
+                    (!date.value || row.dataset.date === date.value);
+                row.hidden = !show;
+                if (show) visible++;
+            });
+            empty.hidden = visible !== 0;
+        }
+        [search, status, date].forEach(function (el) {
+            el.addEventListener('input', apply);
+            el.addEventListener('change', apply);
+        });
+    })();
+    </script>
 
 {% endblock %}

@@ -56,30 +56,38 @@ def encode_face(image_data):
     # Python list so it can be stored as JSON in the database.
     return encodings[0].tolist()
 
+def _best_match(new_encoding, all_applicants):
+    """Returns (closest_applicant, its_distance, second_closest_distance)."""
+    candidates = [a for a in all_applicants if a.face_encoding]
+    if not candidates:
+        return None, None, None
 
-def find_duplicate(new_encoding, all_applicants, threshold=0.6):
-    """
-    Compares new_encoding against every applicant who already has a
-    stored face_encoding. Returns the matching Applicant if one is
-    found within the threshold, otherwise None.
+    stored = np.array([a.face_encoding for a in candidates])
+    distances = face_recognition.face_distance(stored, np.array(new_encoding))
+    order = np.argsort(distances)
 
-    threshold: lower = stricter matching. 0.6 is face_recognition's
-    own recommended default for "same person."
-    """
-    new_encoding_array = np.array(new_encoding)
+    best = order[0]
+    second = float(distances[order[1]]) if len(order) > 1 else None
+    print(f"[face] closest={candidates[best].registration_number} "
+          f"distance={distances[best]:.3f} second={second}")  # remove once tuned
+    return candidates[best], float(distances[best]), second
 
-    for applicant in all_applicants:
-        if not applicant.face_encoding:
-            continue  # this applicant hasn't captured a face yet
-
-        stored_encoding_array = np.array(applicant.face_encoding)
-        distance = face_recognition.face_distance([stored_encoding_array], new_encoding_array)[0]
-
-        if distance <= threshold:
-            return applicant
-
+def find_duplicate(new_encoding, all_applicants, threshold=0.5):
+    """Registration: is this face already registered?"""
+    applicant, dist, _ = _best_match(new_encoding, all_applicants)
+    if applicant is not None and dist <= threshold:
+        return applicant
     return None
 
+def find_match(new_encoding, all_applicants, threshold=0.5, margin=0.05):
+    """Time In: identify who this is. Must be close AND clearly closer
+    than the runner-up, otherwise treat as 'not identified'."""
+    applicant, dist, second = _best_match(new_encoding, all_applicants)
+    if applicant is None or dist > threshold:
+        return None
+    if second is not None and (second - dist) < margin:
+        return None
+    return applicant
 
 def verify_identity(applicant, live_image_data, threshold=0.6):
     """

@@ -7,13 +7,20 @@
 
 :root {
     --color-primary: #1E2A4A;
+    --color-primary-hover: #2C3D66;
     --color-bg: #F6F7F9;
     --color-surface: #FFFFFF;
     --color-text: #1A1D24;
     --color-text-muted: #5B6472;
     --color-success: #2E7D6B;
     --color-warning: #C97A2B;
+    --color-danger: #A13A3A;
     --color-border: #E2E5EA;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --shadow-card: 0 1px 2px rgba(30, 42, 74, 0.04), 0 4px 16px rgba(30, 42, 74, 0.04);
+    --shadow-modal: 0 24px 60px rgba(30, 42, 74, 0.28);
 
     --font-display: 'Source Serif 4', Georgia, serif;
     --font-body: 'Inter', -apple-system, sans-serif;
@@ -29,6 +36,8 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* ---------- Layout ---------- */
+
 .admin-layout {
     display: flex;
     min-height: 100vh;
@@ -38,7 +47,7 @@ body {
     width: 240px;
     background: var(--color-primary);
     color: white;
-    padding: 28px 20px;
+    padding: 28px 16px;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -47,7 +56,7 @@ body {
 .sidebar-brand {
     font-family: var(--font-display);
     font-size: 19px;
-    margin-bottom: 36px;
+    margin: 0 8px 36px;
     line-height: 1.3;
 }
 
@@ -62,14 +71,15 @@ body {
     color: rgba(255,255,255,0.82);
     text-decoration: none;
     padding: 11px 14px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     font-size: 14px;
     font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .sidebar a:hover,
 .sidebar a.active {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.12);
     color: white;
 }
 
@@ -80,13 +90,25 @@ body {
 
 .admin-content {
     flex: 1;
+    min-width: 0;
     padding: 40px 48px;
 }
 
+/* ---------- Page header ---------- */
+
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
 .page-heading {
-    font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 600;
+    font-family: var(--font-body);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     margin: 0 0 4px;
     color: var(--color-primary);
 }
@@ -95,9 +117,13 @@ body {
     color: var(--color-text-muted);
     font-size: 14px;
     margin: 0 0 32px;
+    line-height: 1.5;
 }
 
-/* Stat cards for dashboard */
+.page-header .page-subtext { margin-bottom: 0; }
+
+/* ---------- Stat cards (dashboard) ---------- */
+
 .stat-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -108,8 +134,9 @@ body {
 .stat-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     padding: 20px 22px;
+    box-shadow: var(--shadow-card);
 }
 
 .stat-card .stat-value {
@@ -125,19 +152,22 @@ body {
     margin-top: 4px;
 }
 
-/* Login page (standalone, no sidebar) */
+/* ---------- Login page (standalone, no sidebar) ---------- */
+
 .login-shell {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--color-bg);
+    padding: 24px;
 }
 
 .login-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
     padding: 44px 40px;
     max-width: 380px;
     width: 100%;
@@ -150,12 +180,13 @@ body {
     margin: 0 0 28px;
 }
 
-/* Form fields - used on login page AND any other admin form (e.g. Add Program) */
+/* ---------- Form fields ---------- */
+
 .field { margin-bottom: 18px; }
 
 .field label {
     display: block;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     margin-bottom: 6px;
 }
@@ -163,114 +194,314 @@ body {
 .field input,
 .field select {
     width: 100%;
-    padding: 12px 14px;
-    font-size: 15px;
-    border: 1.5px solid var(--color-border);
-    border-radius: 4px;
+    padding: 11px 14px;
+    font-size: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
     font-family: var(--font-body);
+    color: var(--color-text);
     background: white;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+
+.field input::placeholder { color: #9AA1AD; }
 
 .field input:focus,
 .field select:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 1px;
+    outline: none;
     border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(30, 42, 74, 0.12);
+}
+
+/* Two-column form grid (used in the Create modal and Edit page) */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 20px;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn-primary,
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-body);
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-primary {
-    width: 100%;
-    padding: 13px;
-    font-size: 15px;
-    font-weight: 600;
     background: var(--color-primary);
     color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--font-body);
+    border: 1px solid var(--color-primary);
 }
 
-.btn-primary:hover { background: #2C3D66; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+
+.btn-secondary {
+    background: white;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover { background: var(--color-bg); }
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.link-button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Full-width variant (login page) */
+.login-card .btn-primary { width: 100%; padding: 13px; }
+
+/* ---------- Flash messages ---------- */
+
+.flash-error,
+.flash-success {
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    margin-bottom: 18px;
+    border: 1px solid transparent;
+}
 
 .flash-error {
     background: #FBEAEA;
-    color: #A13A3A;
-    padding: 10px 14px;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-bottom: 18px;
+    color: var(--color-danger);
+    border-color: #F1D3D3;
 }
 
-@media (max-width: 720px) {
-    .admin-layout { flex-direction: column; }
-    .sidebar { width: 100%; }
-    .admin-content { padding: 24px; }
+.flash-success {
+    background: #E9F1EF;
+    color: var(--color-success);
+    border-color: #CFE2DD;
 }
 
-/* Small inline forms used inside content pages, e.g. "Add Program" */
+/* ---------- Cards / inline forms ---------- */
+
 .inline-form-card {
     max-width: 420px;
     margin-bottom: 32px;
     padding: 24px;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
 }
 
-/* Data tables */
+/* Wider card used by the Edit Batch page */
+.form-card {
+    max-width: 640px;
+    padding: 28px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+/* ---------- Toolbar (search + filters) ---------- */
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.toolbar input,
+.toolbar select {
+    height: 42px;
+    padding: 0 14px;
+    font-size: 14px;
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background: white;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.toolbar input:focus,
+.toolbar select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(30, 42, 74, 0.12);
+}
+
+.search-box {
+    position: relative;
+    flex: 1 1 280px;
+}
+
+.search-box input {
+    width: 100%;
+    padding-left: 40px;
+}
+
+.search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-muted);
+    pointer-events: none;
+}
+
+/* ---------- Data tables ---------- */
+/* Header bar and every row are their own white, rounded strip (see mockup). */
+
+.table-card { overflow-x: auto; }
+
 .data-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin-top: -8px;
+}
+
+.data-table th,
+.data-table td {
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
 }
 
 .data-table th {
     text-align: left;
-    padding: 10px 8px;
-    border-bottom: 1px solid var(--color-border);
-    font-size: 13px;
-    color: var(--color-text-muted);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #3A4252;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .data-table td {
-    padding: 10px 8px;
-    border-bottom: 1px solid var(--color-border);
+    padding: 14px 16px;
     font-size: 14px;
 }
 
-.data-table td.muted {
-    color: var(--color-text-muted);
+.data-table th:first-child,
+.data-table td:first-child {
+    border-left: 1px solid var(--color-border);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
+
+.data-table th:last-child,
+.data-table td:last-child {
+    border-right: 1px solid var(--color-border);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.data-table tbody tr:hover td { background: #FAFBFC; }
+
+.data-table td.muted { color: var(--color-text-muted); }
+
+.data-table .batch-id { font-weight: 600; color: var(--color-primary); }
+.data-table .col-actions { text-align: right; white-space: nowrap; }
+
+.cell-sub {
+    display: block;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+/* Seats with a small fill bar */
+.seats { min-width: 96px; }
+
+.seats-bar {
+    height: 4px;
+    margin-top: 6px;
+    background: #EDEEF0;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.seats-bar span {
+    display: block;
+    height: 100%;
+    background: var(--color-success);
+    border-radius: 99px;
+}
+
+.seats-bar.is-full span { background: var(--color-warning); }
+
+/* ---------- Row actions ---------- */
 
 .link-button {
     background: none;
     border: none;
-    color: #A13A3A;
+    color: var(--color-primary);
     cursor: pointer;
     font-size: 13px;
+    font-weight: 500;
     font-family: var(--font-body);
-    padding: 0;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
 }
 
-.link-button:hover {
-    text-decoration: underline;
-}
+.link-button:hover { background: rgba(30, 42, 74, 0.08); }
 
 .link-button-danger {
-    color: #A13A3A;
-    margin-left: 12px;
+    color: var(--color-danger);
+    margin-left: 4px;
 }
 
-.inline-form {
-    display: inline;
+.link-button-danger:hover { background: #FBEAEA; }
+
+/* Batch can't be changed (ongoing / has applicants): still clickable so the
+   system can explain why, but visually muted. */
+.link-button.is-locked { opacity: 0.45; }
+
+.inline-form { display: inline; }
+
+/* ---------- Empty state ---------- */
+
+.empty-state {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    padding: 64px 24px;
+    color: var(--color-text-muted);
+    font-size: 14px;
 }
 
-/* Status badges for exam batches */
+.empty-state strong {
+    display: block;
+    color: var(--color-text);
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+/* ---------- Status badges ---------- */
+
 .status-badge {
     display: inline-block;
-    padding: 3px 10px;
-    border-radius: 3px;
+    padding: 4px 10px;
+    border-radius: 99px;
     font-size: 12px;
     font-weight: 500;
     text-transform: capitalize;
@@ -288,7 +519,8 @@ body {
 }
 
 .status-full,
-.status-closed {
+.status-closed,
+.status-ended {
     background: #EDEEF0;
     color: var(--color-text-muted);
 }
@@ -306,5 +538,52 @@ body {
 
 .status-absent {
     background: #FBEAEA;
-    color: #A13A3A;
+    color: var(--color-danger);
+}
+
+/* ---------- Modal (native <dialog>) ---------- */
+
+.modal {
+    width: min(600px, calc(100% - 32px));
+    padding: 28px;
+    border: none;
+    border-radius: 16px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: var(--shadow-modal);
+}
+
+.modal::backdrop {
+    background: rgba(30, 42, 74, 0.45);
+    backdrop-filter: blur(2px);
+}
+
+.modal[open] { animation: modal-in 0.18s ease-out; }
+
+@keyframes modal-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+.modal h2 {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal[open] { animation: none; }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 720px) {
+    .admin-layout { flex-direction: column; }
+    .sidebar { width: 100%; }
+    .admin-content { padding: 24px 20px; }
+    .page-header { flex-direction: column; }
+    .form-grid { grid-template-columns: 1fr; }
+    .modal { padding: 22px; }
 }
