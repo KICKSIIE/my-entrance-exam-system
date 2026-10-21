@@ -1,0 +1,16 @@
+/* ============================================
+   VIEW ATTENDANCE  (2.3)
+   Loaded after base.css on the attendance page only.
+   ============================================ */
+
+.attendance-toolbar select { flex: 0 1 380px; min-width: 240px; max-width: 100%; }
+
+.result-summary {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.result-summary strong { color: var(--color-text); font-weight: 600; }
+
+.attendance-table .ref-no { font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }

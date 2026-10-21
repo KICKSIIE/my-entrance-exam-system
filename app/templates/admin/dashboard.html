@@ -1,25 +1,104 @@
 {% extends "admin/base_admin.html" %}
 {% block title %}Dashboard{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/css/dashboard.css') }}">
+{% endblock %}
 {% block content %}
 
-    <h1 class="page-heading">Dashboard</h1>
-    <p class="page-subtext">Today's overview.</p>
+    <div class="page-header">
+        <div>
+            <h1 class="page-heading">Dashboard</h1>
+            <p class="page-subtext">Welcome, {{ current_user.full_name or current_user.username }}. Here is today's overview.</p>
+        </div>
+        <div class="page-actions">
+            <a href="{{ url_for('admin.batches') }}" class="btn-secondary">Manage Exam Schedule</a>
+            <a href="{{ url_for('admin.attendance') }}" class="btn-primary">View Attendance</a>
+        </div>
+    </div>
 
     <div class="stat-grid">
         <div class="stat-card">
-            <span class="stat-value">0</span>
+            <span class="stat-value">{{ registrations_today }}</span>
             <span class="stat-label">Registrations today</span>
         </div>
         <div class="stat-card">
-            <span class="stat-value">0</span>
-            <span class="stat-label">Attendance verified today</span>
+            <span class="stat-value">{{ timed_in_today }}</span>
+            <span class="stat-label">Timed in today</span>
         </div>
         <div class="stat-card">
-            <span class="stat-value">0</span>
+            <span class="stat-value">{{ open_batches }}</span>
             <span class="stat-label">Open exam batches</span>
         </div>
     </div>
 
-    <p class="page-subtext">Recent activity, batch quick-actions, and applicant search will go here.</p>
+    <div class="dashboard-grid">
+
+        <section class="panel" aria-labelledby="upcoming-title">
+            <div class="panel-header">
+                <h2 class="panel-title" id="upcoming-title">Upcoming batches</h2>
+                <a href="{{ url_for('admin.batches') }}" class="link-button">Manage</a>
+            </div>
+            {% if upcoming_batches %}
+            <ul class="panel-list">
+                {% for batch in upcoming_batches %}
+                {% if batch.is_ongoing %}{% set status = 'ongoing' %}
+                {% elif batch.is_full %}{% set status = 'full' %}
+                {% else %}{% set status = 'open' %}{% endif %}
+                {% set pct = ((batch.reserved_seats / batch.capacity) * 100)|round|int if batch.capacity else 0 %}
+                <li class="panel-row">
+                    <div class="panel-row-main">
+                        <div class="panel-row-title">
+                            <span class="batch-id">#{{ batch.id }}</span>
+                            {{ batch.exam_date.strftime('%b %d, %Y') }}
+                        </div>
+                        <span class="cell-sub">
+                            {{ batch.start_time.strftime('%I:%M %p') }} – {{ batch.end_time.strftime('%I:%M %p') }}
+                            · {{ batch.building }}, Room {{ batch.room }}
+                        </span>
+                    </div>
+                    <div class="seats">
+                        {{ batch.reserved_seats }} / {{ batch.capacity }}
+                        <div class="seats-bar {{ 'is-full' if pct >= 100 }}"><span style="width: {{ [pct, 100]|min }}%"></span></div>
+                    </div>
+                    <div class="panel-row-side">
+                        <span class="status-badge status-{{ status }}">{{ status }}</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="panel-empty">
+                <strong>No upcoming batches</strong>
+                Create a batch in Manage Exam Schedule.
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="panel" aria-labelledby="recent-title">
+            <div class="panel-header">
+                <h2 class="panel-title" id="recent-title">Recent time-ins</h2>
+                <a href="{{ url_for('admin.attendance') }}" class="link-button">View all</a>
+            </div>
+            {% if recent_attendance %}
+            <ul class="panel-list">
+                {% for record in recent_attendance %}
+                <li class="panel-row">
+                    <div class="panel-row-main">
+                        <div class="panel-row-title">{{ record.applicant.full_name }}</div>
+                        <span class="cell-sub">Batch #{{ record.applicant.exam_batch_id }} · {{ record.reference_number }}</span>
+                    </div>
+                    <div class="panel-row-side cell-sub">{{ record.timed_in_at.strftime('%b %d, %I:%M %p') }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="panel-empty">
+                <strong>No time-ins yet</strong>
+                Attendance will appear here once applicants time in.
+            </div>
+            {% endif %}
+        </section>
+
+    </div>
 
 {% endblock %}

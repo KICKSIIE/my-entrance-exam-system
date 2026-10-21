@@ -1,0 +1,93 @@
+/* ============================================
+   LOGIN  (2.1 Admin Login) - split panel
+   Loaded after base.css on the login page only.
+   ============================================ */
+
+.login-page { display: flex; min-height: 100vh; }
+
+.login-brand-panel {
+    flex: 1;
+    background: var(--color-primary);
+    background-image:
+        radial-gradient(circle at 15% 20%, rgba(255,255,255,0.06) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(255,255,255,0.05) 0%, transparent 40%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 56px;
+}
+
+.login-brand-mark {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 28px;
+}
+
+.login-brand-heading {
+    font-family: var(--font-display);
+    font-size: 36px;
+    line-height: 1.25;
+    font-weight: 600;
+    margin: 0 0 16px;
+    max-width: 420px;
+}
+
+.login-brand-tagline {
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    max-width: 340px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.login-brand-footer { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+.login-form-panel {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: var(--color-surface);
+}
+
+.login-card { width: 100%; max-width: 340px; }
+
+.login-eyebrow {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--color-success);
+    margin-bottom: 14px;
+}
+
+.login-heading {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 8px;
+}
+
+.login-subheading {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin: 0 0 28px;
+    line-height: 1.5;
+}
+
+/* Full-width submit button on the login form only */
+.login-card .btn-primary { width: 100%; padding: 13px; margin-top: 4px; }
+
+@media (max-width: 860px) {
+    .login-page { flex-direction: column; }
+    .login-brand-panel { padding: 36px; min-height: 220px; }
+    .login-brand-heading { font-size: 26px; }
+    .login-form-panel { max-width: 100%; padding: 32px 24px; }
+}

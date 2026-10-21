@@ -6,7 +6,7 @@ Login (2.1) lives in auth.py.
 """
 import csv
 import io
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    flash, Response)
@@ -18,10 +18,41 @@ from app.models import ExamBatch, Applicant, Attendance
 admin_bp = Blueprint('admin', __name__)
 
 
+# ==========================================================================
+# DASHBOARD
+# ==========================================================================
+
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('admin/dashboard.html')
+    day_start = datetime.combine(date.today(), datetime.min.time())
+    day_end = day_start + timedelta(days=1)
+
+    registrations_today = Applicant.query.filter(
+        Applicant.registered_at >= day_start,
+        Applicant.registered_at < day_end).count()
+
+    timed_in_today = Attendance.query.filter(
+        Attendance.timed_in_at >= day_start,
+        Attendance.timed_in_at < day_end).count()
+
+    all_batches = (ExamBatch.query
+                   .order_by(ExamBatch.exam_date, ExamBatch.start_time).all())
+    open_batches = sum(1 for b in all_batches if b.is_open)
+    upcoming_batches = [b for b in all_batches if not b.has_ended][:5]
+
+    recent_attendance = (Attendance.query
+                         .order_by(Attendance.timed_in_at.desc())
+                         .limit(6).all())
+
+    return render_template(
+        'admin/dashboard.html',
+        registrations_today=registrations_today,
+        timed_in_today=timed_in_today,
+        open_batches=open_batches,
+        upcoming_batches=upcoming_batches,
+        recent_attendance=recent_attendance,
+    )
 
 
 # ==========================================================================
@@ -151,6 +182,7 @@ def attendance():
     records = _attendance_query(batch_filter).all()
     all_batches = (ExamBatch.query
                    .order_by(ExamBatch.exam_date, ExamBatch.start_time).all())
+    selected_batch = db.session.get(ExamBatch, batch_filter) if batch_filter else None
 
     # The template shows a "No records" message when `records` is empty.
     return render_template(
@@ -158,6 +190,7 @@ def attendance():
         records=records,
         batches=all_batches,
         batch_filter=batch_filter,
+        selected_batch=selected_batch,
     )
 
 

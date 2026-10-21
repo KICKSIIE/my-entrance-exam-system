@@ -1,0 +1,67 @@
+/* ============================================
+   MANAGE EXAM SCHEDULE  (2.2)  - Nicolette's module
+   Loaded after base.css on batches.html and edit_batch.html.
+   ============================================ */
+
+/* Two-column form grid (Create modal and Edit page) */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+
+/* Wider card used by the Edit Batch page */
+.form-card {
+    max-width: 640px;
+    padding: 28px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+}
+
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+
+/* Row actions */
+.data-table .col-actions { text-align: right; white-space: nowrap; }
+
+.link-button-danger { color: var(--color-danger); margin-left: 4px; }
+.link-button-danger:hover { background: #FBEAEA; }
+
+/* Batch can't be changed (ongoing / has applicants): still clickable so the
+   system can explain why, but visually muted. */
+.link-button.is-locked { opacity: 0.45; }
+
+.inline-form { display: inline; }
+
+/* Modal (native <dialog>) */
+.modal {
+    width: min(600px, calc(100% - 32px));
+    padding: 28px;
+    border: none;
+    border-radius: 16px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: var(--shadow-modal);
+}
+
+.modal::backdrop { background: rgba(30, 42, 74, 0.45); backdrop-filter: blur(2px); }
+.modal[open] { animation: modal-in 0.18s ease-out; }
+
+@keyframes modal-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+.modal h2 {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 0 0 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal[open] { animation: none; }
+}
+
+@media (max-width: 720px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .modal { padding: 22px; }
+}

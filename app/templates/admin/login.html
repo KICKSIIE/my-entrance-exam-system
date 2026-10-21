@@ -4,33 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='admin/css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/css/login.css') }}">
 </head>
 <body>
-    <div class="login-shell">
-        <div class="login-card">
-            <h1>Admin Login</h1>
+    <div class="login-page">
 
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
+        <section class="login-brand-panel" aria-hidden="true">
+            <div>
+                <span class="login-brand-mark">ENTRANCE EXAM</span>
+                <h2 class="login-brand-heading">Face Recognition Attendance System</h2>
+                <p class="login-brand-tagline">Manage exam schedules and review attendance records in one place.</p>
+            </div>
+            <div class="login-brand-footer">Admin panel</div>
+        </section>
+
+        <section class="login-form-panel">
+            <div class="login-card">
+                <span class="login-eyebrow">ADMIN PANEL</span>
+                <h1 class="login-heading">Sign in</h1>
+                <p class="login-subheading">Enter your username and password to continue.</p>
+
+                {% with messages = get_flashed_messages() %}
                     {% for message in messages %}
-                        <div class="flash-error">{{ message }}</div>
+                        <div class="flash-error" role="alert">{{ message }}</div>
                     {% endfor %}
-                {% endif %}
-            {% endwith %}
+                {% endwith %}
 
-            <form method="POST">
-                <div class="field">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="field">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="btn-primary">Log In</button>
-            </form>
-        </div>
+                <form method="POST">
+                    <div class="field">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" autocomplete="username" autofocus required>
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Log In</button>
+                </form>
+            </div>
+        </section>
+
     </div>
 </body>
 </html>
